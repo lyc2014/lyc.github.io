@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="keywords" content="hexo,个人博客,blog">
+  <meta name="description" content="某某的个人博客">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  <link rel="dns-prefetch" href="https://busuanzi.ibruce.info">
+  <link rel="dns-prefetch" href="https://at.alicdn.com">
+  
+  <link rel="dns-prefetch" href="https://widget.daovoice.io">
+  <link rel="dns-prefetch" href="https://widget-static-cdn.daovoice.io">
+  <link rel="dns-prefetch" href="https://im.daovoice.io">
+  
+  
+  <link rel="dns-prefetch" href="https://hm.baidu.com/">
+  
+  
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://api.github.com">
+  <link rel="dns-prefetch" href="https://avatars3.githubusercontent.com">
+  
+  <link rel="stylesheet" type="text/css" href="/lyc.github.io/./style/main.css">
+	<link rel="shortcut icon" href="/favicon.ico" title="Favicon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+	<title>了解arraybuffer和blob区别，并实现图片加密</title>
+  
+  <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?awwssw1snsnsnn1ndndnndnd99j";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();
+  </script>
+  
+  
+    <script>(function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/123456.js","daovoice");daovoice('init',{app_id: "123456"});daovoice('update');
+  </script>
+  
+</head>
+<body>
+  <canvas id="pattern-placeholder" height="230"></canvas>
+<div class="navbar-header">
+  <a class="blog-title" href="/lyc.github.io/">LYC BLOG</a>
+  <a class="face-img" href="/lyc.github.io/">
+    <img src="https://avatars0.githubusercontent.com/u/30564870?s=460&amp;u=b77ffd4cb96db528d15a517ba94ac5dab3271773&amp;v=4">
+  </a>
+</div>
+<main>
+  <div class="article-title">
+    
+  
+  <h1 class="title">
+    了解arraybuffer和blob区别，并实现图片加密
+  </h1>
+  
+
+
+    <ul class="article-info">
+      <li>
+        发布
+        <time datetime="2019-11-21T06:24:51.000Z" itemprop="datePublished">2019-11-21</time>
+      </li>
+      <li>
+        
+    更新 <time datetime="2020-10-29T18:21:17.929Z" itemprop="dateUpdated">2020-10-30</time>
+
+      </li>
+      <li id="busuanzi_container_page_pv">
+        阅读 <span id="busuanzi_value_page_pv"></span>
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <div class="article">
+      <div class="content">
+        
+        <h3 id="ArrayBuffer"><a href="#ArrayBuffer" class="headerlink" title="ArrayBuffer"></a>ArrayBuffer</h3><p>ArrayBuffer对象用于表示通用的、固定长度的原始二进制数据缓冲区（即代表着储存二进制数据的一段内存）。它是不能直接读写的，只能通过视图（TypedArray视图和DataView视图）来读写，视图的作用是以指定格式解读二进制数据。</p>
+<p>ArrayBuffer也是一个构造函数，可以分配一段可以存放数据的连续内存区域</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">const buf = new ArrayBuffer(8)</span><br></pre></td></tr></table></figure>
+<img src="/lyc.github.io/2019/11/21/了解arraybuffer和blob区别，并实现图片加密/photo1.jpeg" title="This is an image">
+<p>然后可以通过视图修改这段内存<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">const x1 = new Uint8Array(buf)</span><br><span class="line">x1[0] = 7</span><br></pre></td></tr></table></figure></p>
+<img src="/lyc.github.io/2019/11/21/了解arraybuffer和blob区别，并实现图片加密/photo2.jpeg" title="This is an image">
+<p>可以看出二进制值已经被修改了。</p>
+<h3 id="Blob"><a href="#Blob" class="headerlink" title="Blob"></a>Blob</h3><p>Blob对象表示一个不可变、原始数据的类文件对象。Blob表示的不一定是JavaScript的原生格式的数据。</p>
+<p>如果要从其他非blob对象和数据构造一个Blob, 请使用Blob()构造函数, Blob()构造函数返回一个新的Blob对象，blob类型只有slice()方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var aBlob = new Blob(array, options)</span><br></pre></td></tr></table></figure>
+<p>对比发现，blob和arraybuffer都是二进制的容器，但是ArrayBuffer的数据，是可以按照字节去操作的，而Blob的只能作为一个整的对象去处理， 所以说，Arraybuffer相比Blob更接近真实的二进制，更底层。</p>
+<h3 id="ArrayBuffer与Blob相互转换"><a href="#ArrayBuffer与Blob相互转换" class="headerlink" title="ArrayBuffer与Blob相互转换"></a>ArrayBuffer与Blob相互转换</h3><h4 id="ArrayBuffer转Blob"><a href="#ArrayBuffer转Blob" class="headerlink" title="ArrayBuffer转Blob"></a>ArrayBuffer转Blob</h4><p>arraybuffer转blob很方便，直接作为参数传入即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var buffer = new ArrayBuffer(16)</span><br><span class="line">var blob = new Blob([buffer])</span><br></pre></td></tr></table></figure></p>
+<h4 id="Blob转ArrayBuffer"><a href="#Blob转ArrayBuffer" class="headerlink" title="Blob转ArrayBuffer"></a>Blob转ArrayBuffer</h4><p>Blob转ArrayBuffer需要借助Web的API： FileReader。 FileReader对象允许Web应用程序异步读取存储在用户计算机上的文件（或原始数据缓冲区）的内容，使用File或Blob对象指定要读取的文件或数据。</p>
+<p>FileReader.readAsArrayBuffer() — result为被读取文件的 ArrayBuffer数据对象<br>FileReader.readAsBinaryString() — result为所读取文件的原始二进制数据  （非标准，尽量不要使用）<br>FileReader.readAsArrayBuffer() — result属性中将包含一个data: URL格式的Base64字符串以表示所读取文件的内容<br>FileReader.readAsText()  — result属性中将包含一个字符串以表示所读取的文件内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var blob = new Blob([1,2,3,4,5]);</span><br><span class="line">var reader = new FileReader();</span><br><span class="line"></span><br><span class="line">reader.onload = function() &#123;</span><br><span class="line">    console.log(this.result);</span><br><span class="line">&#125;</span><br><span class="line">reader.readAsArrayBuffer(blob);</span><br></pre></td></tr></table></figure>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>思路：每种格式的图片的头一个二进制字节都是一样的，可以将这个字节-1打乱使得图片无法打开。然后获取图片的时候再-1解密，并使用window.URL.createObjectURL创建一个URL对象，图片渲染完后销毁。</p>
+<h4 id="加密图片"><a href="#加密图片" class="headerlink" title="加密图片"></a>加密图片</h4><p>input上传图片后，对图片进行加密处理, 并下载下来。(仅展示关键代码部分， 详情可点击文章尾部git仓库查看demo)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">var img = document.getElementById(&apos;img&apos;)</span><br><span class="line">var blob = Files[0]</span><br><span class="line">var name = blob.name</span><br><span class="line">var reader = new FileReader()</span><br><span class="line">reader.onload = function () &#123;</span><br><span class="line">  var arrayBuff = this.result</span><br><span class="line">  var v1 = new Uint8Array(arrayBuff)</span><br><span class="line">  v1[0]--</span><br><span class="line">  var blobFile = new Blob([arrayBuff])</span><br><span class="line">  var link = document.createElement(&apos;a&apos;)</span><br><span class="line">  link.href = window.URL.createObjectURL(blobFile)</span><br><span class="line">  link.download = name</span><br><span class="line">  link.click()</span><br><span class="line">&#125;</span><br><span class="line">reader.readAsArrayBuffer(blob);</span><br></pre></td></tr></table></figure></p>
+<h4 id="解密图片"><a href="#解密图片" class="headerlink" title="解密图片"></a>解密图片</h4><p>使用 ajax 获取图片, 对头一个字节+1解密。然后渲染图片。(仅展示关键代码部分， 详情可点击文章尾部git仓库查看demo)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">xhr.responseType = &apos;arraybuffer&apos;</span><br><span class="line">xhr.onload = function () &#123;</span><br><span class="line">  if (this.status == 200) &#123;</span><br><span class="line">    var arrayBuf = this.response</span><br><span class="line">    var v1 = new Uint8Array(arrayBuf)</span><br><span class="line">    v1[0]++</span><br><span class="line">    var blobFile = new Blob([arrayBuf])</span><br><span class="line"></span><br><span class="line">    img.onload = function(e) &#123;</span><br><span class="line">      window.URL.revokeObjectURL(img.src); </span><br><span class="line">    &#125;;</span><br><span class="line">    img.isParse = true</span><br><span class="line">    img.src = window.URL.createObjectURL(blobFile);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样图片即可展示出来，这样以来无论是img的src上的链接还是sources下载下来的图片资源，都是无效图片。实现了简单加密的功能。</p>
+
+      </div>
+        <div class="support-author">
+          <p>感谢您的阅读。 🙏
+          <a href="https://888.com/index.html" target="_blank">关于转载请看这里</a>
+            <!--<a class="btn-pay"  href="#pay-modal">¥ 打赏支持</a>-->
+          </p>
+        </div>
+        <!--
+            <div class="like ">
+              <div class="like-button">
+                <a id="like-note" href="">
+                  <i class="icon-heart"></i>喜欢
+                </a>
+              </div>
+              <span id="likes-count">256</span>
+            </div>
+        -->
+        <div class="otherLink">
+          <div class="previous">
+          </div>
+          <div class="next">
+          </div>
+        </div>
+        <div class="comments" id="comments">
+          
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+  const gitalk = new Gitalk({
+    clientID: '8888a8888',
+    clientSecret: '8888886666666',
+    repo: 'xxxx.github.io',
+    owner: 'admin',
+    admin: ['admin'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false
+  })
+
+  gitalk.render('comments');
+</script>
+
+
+        </div>
+      </div>
+    </div>
+   
+</main>
+<div class="footer">
+  <div class="info">
+    <p>
+    <a href="https://hexo.io"> Hexo </a> 强力驱动 |
+      <a href="https://github.com/Youthink/hexo-themes-yearn"> Yearn </a>
+      主题
+    </p>
+    <p>&copy;2013-2018 某某的博客 京ICP备xxxxxx号</p>
+  </div>
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script>//console
+  var consoleConfig = '\n欢迎访问 https://hufangyun.com ，围观小猿大圣的博客(づ｡◕‿‿◕｡)づ！\n,\n本博客使用 %cHexo%c 搭建，博客主题为小猿大圣开发的 %chexo-themes-yearn%c ~~~ 🎉🎉🎉 \n\n源码 https://github.com/Youthink/hexo-themes-yearn \n\n如果喜欢可以 star 支持一下 ❤️~\n,\n扫描下面的二维码，在手机上查看博客！\n,https://static.hufangyun.com/blog-url-qrcode-180-180.png,\n 想知道这个效果如何实现的？博客内搜索 console 彩蛋 🚀 ！\n'.split(',');
+  var canConsole = true;
+  var consoleInfo = (function(consoleConfig) {
+  if (!canConsole || !consoleConfig || consoleConfig.length < 1) {
+    return;
+  }
+  var consoleColor = '#6190e8';
+  var _console;
+  var backgroundTextStyle = 'padding: 1px 5px;color: #fff;background: ' + consoleColor + ';'
+  var textStyle = 'color: ' + consoleColor + ';';
+
+  consoleConfig.map(o => {
+    var num = (o.match(/%c/g) || []).length;
+    if(/^http(s)?:\/\//.test(o)) {
+      console.log('%c     ', 'background: url(' + o + ') no-repeat left center;font-size: 180px;');
+      return;
+    }
+    if (num > 0) {
+      var logArguments = [];
+      for (var i = 0; i < num; i++) {
+        if (i % 2 === 0) {
+          logArguments.push(backgroundTextStyle);
+        } else {
+          logArguments.push(textStyle);
+        }
+      }
+      (_console = console).log.apply(_console, ['%c' + o, textStyle].concat(logArguments));
+      return;
+    }
+    console.log('%c' + o, textStyle);
+  });
+}(consoleConfig));</script><script type="text/javascript" src="/lyc.github.io/./js/main.js"></script>
+
+  <script src="//at.alicdn.com/t/font_159214_mvtxvg9me9.js"></script>
+</body>
+</html>

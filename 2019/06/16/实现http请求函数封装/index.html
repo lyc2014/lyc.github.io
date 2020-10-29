@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="keywords" content="hexo,个人博客,blog">
+  <meta name="description" content="某某的个人博客">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  <link rel="dns-prefetch" href="https://busuanzi.ibruce.info">
+  <link rel="dns-prefetch" href="https://at.alicdn.com">
+  
+  <link rel="dns-prefetch" href="https://widget.daovoice.io">
+  <link rel="dns-prefetch" href="https://widget-static-cdn.daovoice.io">
+  <link rel="dns-prefetch" href="https://im.daovoice.io">
+  
+  
+  <link rel="dns-prefetch" href="https://hm.baidu.com/">
+  
+  
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://api.github.com">
+  <link rel="dns-prefetch" href="https://avatars3.githubusercontent.com">
+  
+  <link rel="stylesheet" type="text/css" href="/lyc.github.io/./style/main.css">
+	<link rel="shortcut icon" href="/favicon.ico" title="Favicon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+	<title>在vue中使用 mock + axios 实现http请求函数封装</title>
+  
+  <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?awwssw1snsnsnn1ndndnndnd99j";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();
+  </script>
+  
+  
+    <script>(function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/123456.js","daovoice");daovoice('init',{app_id: "123456"});daovoice('update');
+  </script>
+  
+</head>
+<body>
+  <canvas id="pattern-placeholder" height="230"></canvas>
+<div class="navbar-header">
+  <a class="blog-title" href="/lyc.github.io/">LYC BLOG</a>
+  <a class="face-img" href="/lyc.github.io/">
+    <img src="https://avatars0.githubusercontent.com/u/30564870?s=460&amp;u=b77ffd4cb96db528d15a517ba94ac5dab3271773&amp;v=4">
+  </a>
+</div>
+<main>
+  <div class="article-title">
+    
+  
+  <h1 class="title">
+    在vue中使用 mock + axios 实现http请求函数封装
+  </h1>
+  
+
+
+    <ul class="article-info">
+      <li>
+        发布
+        <time datetime="2019-06-16T05:07:12.000Z" itemprop="datePublished">2019-06-16</time>
+      </li>
+      <li>
+        
+    更新 <time datetime="2020-10-29T18:21:26.874Z" itemprop="dateUpdated">2020-10-30</time>
+
+      </li>
+      <li id="busuanzi_container_page_pv">
+        阅读 <span id="busuanzi_value_page_pv"></span>
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <div class="article">
+      <div class="content">
+        
+        <p>axios使用的是promise，使用和维护起来都非常方便，所以我选择它。<br>mockjs使用起来也很简单，不需要搭建mock服务，虽然没有easymock那么简便，但是比easymock官方在线服务稳定，比本地部署简便，所以我选择mockjs。<br>开发项目的时候，后端还没写好接口是，前端可以根据文档预先定好的字段写出对应的mock数据，模拟接口数据，这样会节省很多的对接时间。接下来我会<br>结合axios和mock封装出一个比较好用的函数。demo的git地址是<a href="https://github.com/lyc2014/template" target="_blank" rel="noopener">https://github.com/lyc2014/template</a>。</p>
+<p>使用vue.cli3搭建项目，引入axios、mockjs。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">npm install -g @vue/cli</span><br><span class="line">vue create template</span><br><span class="line">cd template</span><br><span class="line">npm install axios mockjs --save</span><br></pre></td></tr></table></figure></p>
+<h3 id="使用axios"><a href="#使用axios" class="headerlink" title="使用axios"></a>使用axios</h3><p>在src目录下创建一个axios目录，建立一个index.js, 简单封装一个请求函数。axios的使用文档<a href="https://github.com/axios/axios" target="_blank" rel="noopener">https://github.com/axios/axios</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// axios/index.js</span><br><span class="line">function myAxios (url, postdata, method = &apos;get&apos;) &#123;</span><br><span class="line">  return new Promise((resolve, reject) =&gt; &#123;</span><br><span class="line">      axios(&#123;</span><br><span class="line">          url: url,</span><br><span class="line">          postdata,</span><br><span class="line">          method</span><br><span class="line">      &#125;).then(res =&gt; &#123;</span><br><span class="line">          resolve(res)</span><br><span class="line">      &#125;).catch(error =&gt; &#123;</span><br><span class="line">          reject(error)</span><br><span class="line">      &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">export default myAxios</span><br></pre></td></tr></table></figure></p>
+<p>在src/main.js中引入这个myAxios，并将其挂载在vue的prototype上方便全局调用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import myAxios from &apos;@/axios/index.js&apos;</span><br><span class="line">Vue.prototype.$axios = myAxios</span><br></pre></td></tr></table></figure></p>
+<p>接下来在vue文件中使用豆瓣电影的api测试一下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mounted () &#123;</span><br><span class="line">  this.$axios(&apos;https://m.douban.com/rexxar/api/v2/muzzy/columns/10018/items&apos;, &#123;</span><br><span class="line">    start: 0,</span><br><span class="line">    count: 3</span><br><span class="line">  &#125;).then(res =&gt; &#123;</span><br><span class="line">    console.log(res)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>打印内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Access to XMLHttpRequest at &apos;https://m.douban.com/rexxar/api/v2/muzzy/columns/10018/items&apos; from origin &apos;http://localhost:8080&apos; has been blocked by CORS policy: No &apos;Access-Control-Allow-Origin&apos; header is present on the requested resource.</span><br></pre></td></tr></table></figure></p>
+<p>这是一个跨域资源限制问题，我们可以利用devServer做一个代理映射去解决这个问题，在vue.config.js中添加一下配置(没有此文件可在项目根目录下建立一个),vue.cli3的配置文档<a href="https://cli.vuejs.org/zh/config/" target="_blank" rel="noopener">https://cli.vuejs.org/zh/config/</a>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// vue.config.js</span><br><span class="line">module.exports = &#123;</span><br><span class="line">    devServer: &#123;</span><br><span class="line">        proxy: &#123;</span><br><span class="line">            &apos;^/api&apos;: &#123;</span><br><span class="line">                target: &apos;https://m.douban.com/rexxar&apos;,</span><br><span class="line">                changeOrigin: true</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>修改App.vue中请求的url地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mounted () &#123;</span><br><span class="line">  this.$axios(&apos;/api/v2/muzzy/columns/10018/items&apos;, &#123;</span><br><span class="line">    start: 0,</span><br><span class="line">    count: 3</span><br><span class="line">  &#125;).then(res =&gt; &#123;</span><br><span class="line">    console.log(res)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>重新npm run serve 运行一下，能拿到数据了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">config: &#123;url: &quot;/api/v2/muzzy/columns/10018/items&quot;, method: &quot;get&quot;, headers: &#123;…&#125;, transformRequest: Array(1), transformResponse: Array(1), …&#125;</span><br><span class="line">data: &#123;count: 20, start: 0, total: 16, items: Array(16)&#125;</span><br><span class="line">headers: &#123;date: &quot;Tue, 29 Oct 2019 06:25:31 GMT&quot;, strict-transport-security: &quot;max-age=15552000;&quot;, x-content-type-options: &quot;nosniff&quot;, x-powered-by: &quot;Express&quot;, x-ratelimit-remaining2: &quot;9892&quot;, …&#125;</span><br><span class="line">request: XMLHttpRequest &#123;readyState: 4, timeout: 0, withCredentials: false, upload: XMLHttpRequestUpload, onreadystatechange: ƒ, …&#125;</span><br><span class="line">status: 200</span><br><span class="line">statusText: &quot;OK&quot;</span><br></pre></td></tr></table></figure></p>
+<h3 id="优化请求函数"><a href="#优化请求函数" class="headerlink" title="优化请求函数"></a>优化请求函数</h3><p>总体思路，创建一个MyAxios类，所有接口公用部分的入参、公用配置new这个类的时候传入，然后生成的对象返回值是请求函数,<br>修改axios/index.js中的代码。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">//  axios.js</span><br><span class="line">import axios from &apos;axios&apos;</span><br><span class="line">// const SUCCESS_CODE = 200</span><br><span class="line">const NOT_LOGIN_CODE = 401</span><br><span class="line">class MyAxios &#123;</span><br><span class="line">  constructor (aipConfig, alertServerErrMsg) &#123;</span><br><span class="line">    if (!aipConfig) &#123;</span><br><span class="line">      throw new Error(&apos;aipConfig is required&apos;)</span><br><span class="line">    &#125;</span><br><span class="line">    this.aipConfig = aipConfig</span><br><span class="line">    this.alertServerErrMsg = alertServerErrMsg</span><br><span class="line">    return this.doAxios.bind(this)</span><br><span class="line">  &#125;</span><br><span class="line">  doAxios (apiName, postdata) &#123;</span><br><span class="line">    if (!this.aipConfig[apiName]) &#123;</span><br><span class="line">      console.error(&apos;please set apiName&apos;)</span><br><span class="line">      return</span><br><span class="line">    &#125;</span><br><span class="line">    if (typeof this.aipConfig[apiName] === &apos;string&apos;) &#123;</span><br><span class="line">      this.aipConfig[apiName] = &#123; url: this.aipConfig[apiName] &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    let &#123;</span><br><span class="line">      url,</span><br><span class="line">      method = &apos;post&apos;,</span><br><span class="line">      responseType = &apos;json&apos;,</span><br><span class="line">      notAlertError = false,</span><br><span class="line">      notNeedVerify = false</span><br><span class="line">    &#125; = this.aipConfig[apiName]</span><br><span class="line"></span><br><span class="line">    if (!url) &#123;</span><br><span class="line">      console.error(`url is required in apiName`)</span><br><span class="line">      return</span><br><span class="line">    &#125;</span><br><span class="line">    return new Promise((resolve, reject) =&gt; &#123;</span><br><span class="line">      axios(&#123;</span><br><span class="line">        url,</span><br><span class="line">        method,</span><br><span class="line">        params: postdata,</span><br><span class="line">        data: postdata,</span><br><span class="line">        responseType,</span><br><span class="line">      &#125;).then(this.checkStatus)</span><br><span class="line">      .then(response =&gt; &#123;</span><br><span class="line">        //  go verification process or not</span><br><span class="line">        if (notNeedVerify) &#123;</span><br><span class="line">          resolve(response)</span><br><span class="line">          return</span><br><span class="line">        &#125;</span><br><span class="line">        // if (response.data.code === SUCCESS_CODE) &#123;</span><br><span class="line">          resolve(response.data)</span><br><span class="line">        // &#125; else &#123;</span><br><span class="line">        //   //  triggering prompts or not</span><br><span class="line">        //   if (!notAlertError) &#123;</span><br><span class="line">        //     this.errorNotify(this.alertServerErrMsg, response.data.message)</span><br><span class="line">        //   &#125;</span><br><span class="line">        //   //  triggering error response event</span><br><span class="line">        //   this.errorHandler(response.data.code)</span><br><span class="line">        //   reject(response.data.message)</span><br><span class="line">        // &#125;</span><br><span class="line">      &#125;).catch((error) =&gt; &#123;</span><br><span class="line">        //  triggering prompts or not</span><br><span class="line">        if (!notAlertError) &#123;</span><br><span class="line">          this.errorNotify(this.alertServerErrMsg, response.data.message)</span><br><span class="line">        &#125;</span><br><span class="line">        reject(error.message)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  errorNotify (notifyFunc, message) &#123;</span><br><span class="line">    if (notifyFunc) &#123;</span><br><span class="line">      notifyFunc(message)</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      window.alert(message)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  errorHandler (code) &#123;</span><br><span class="line">    if (code === NOT_LOGIN_CODE) &#123;</span><br><span class="line">      //  to do clear token</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  checkStatus (response) &#123;</span><br><span class="line">    if (response.data &amp;&amp; response.status === 200) &#123;</span><br><span class="line">      return response</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      let error = new Error(response.statusText || response.status || &apos;网络通讯失败&apos;)</span><br><span class="line">      throw error</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default MyAxios</span><br></pre></td></tr></table></figure>
+<p>创建一个api目录统一维护接口，创建index.js文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// api/index.js</span><br><span class="line">const apiList = &#123;</span><br><span class="line">  testApiOne: &apos;/api/v2/muzzy/columns/10018/items&apos;,</span><br><span class="line">  testApiTwo: &#123;</span><br><span class="line">    url: &apos;/api/v2/muzzy/columns/10018/items&apos;,</span><br><span class="line">    method: &apos;get&apos;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default apiList</span><br></pre></td></tr></table></figure></p>
+<p>然后在main.js中初始化配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//main.js</span><br><span class="line">import Vue from &apos;vue&apos;</span><br><span class="line">import App from &apos;./App.vue&apos;</span><br><span class="line">import MyAxios from &apos;@/axios/index.js&apos;</span><br><span class="line">import apiList from &apos;@/api&apos;</span><br><span class="line">Vue.config.productionTip = false</span><br><span class="line">Vue.prototype.$axios = new MyAxios(apiList)</span><br><span class="line">new Vue(&#123;</span><br><span class="line">  render: h =&gt; h(App),</span><br><span class="line">&#125;).$mount(&apos;#app&apos;)</span><br></pre></td></tr></table></figure></p>
+<p>在App.vue中使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">this.$axios(&apos;testApiTwo&apos;).then(res =&gt; &#123;</span><br><span class="line">    console.log(res)</span><br><span class="line">  &#125;).catch(() =&gt; &#123;</span><br><span class="line">    console.log(&apos;错误了&apos;)</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure></p>
+<p>函数里面具体怎么处理返回值是根据和后端协定的格式决定。</p>
+<h3 id="使用mockjs"><a href="#使用mockjs" class="headerlink" title="使用mockjs"></a>使用mockjs</h3><p>创建一个mock目录,建立index.js添加mock, mock的文档地址<a href="https://github.com/nuysoft/Mock/wiki" target="_blank" rel="noopener">https://github.com/nuysoft/Mock/wiki</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// mock/index.js</span><br><span class="line">const Mock = require(&apos;mockjs&apos;)</span><br><span class="line">//  建议将接口分批定义对应语义化的.js文件进行管理，然后统一引入到mock/index.js文件下。mock的语法规范请看官网，本例子只写封装过程。</span><br><span class="line">const mockList = &#123;</span><br><span class="line">  testApiTwo: &#123;</span><br><span class="line">    &quot;code&quot;: 200,</span><br><span class="line">    &quot;data&quot;: &#123;</span><br><span class="line">        test: &apos;mock数据&apos;</span><br><span class="line">    &#125;</span><br><span class="line">    &quot;message&quot;: &quot;成功了&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default function useMock(apiName, url) &#123;</span><br><span class="line">  if (!mockList[apiName]) &#123;</span><br><span class="line">    throw `请自行添加$&#123;apiName&#125;接口的mock数据`</span><br><span class="line">  &#125;</span><br><span class="line">  Mock.mock(url, mockList[apiName])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后在api/index.js配置中引入mock。代码如下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">import useMock from &apos;@/mock&apos;</span><br><span class="line">const version = &apos;v1&apos;</span><br><span class="line">//  建议apiList分批定义对应语义化的.js文件进行管理，然后统一引入到mock/index.js文件下.</span><br><span class="line">const apiList = &#123;</span><br><span class="line">  testApiOne: &apos;&apos;,</span><br><span class="line">  testApiTwo: &#123;</span><br><span class="line">    url: &apos;/testApiTwo&apos;,</span><br><span class="line">    mock: true</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">addApiParams(apiList)</span><br><span class="line">function  addApiParams (apiList) &#123;</span><br><span class="line">  Object.keys(apiList).forEach(key =&gt; &#123;</span><br><span class="line">    //  验证参数</span><br><span class="line">    valiateParams(apiList[key])</span><br><span class="line">    //  补充url</span><br><span class="line">    if (typeof apiList[key] === &apos;string&apos;) &#123;</span><br><span class="line">      apiList[key] = &apos;/&apos; + version + apiList[key]</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">      apiList[key].url = &apos;/&apos; + version + apiList[key].url</span><br><span class="line">    &#125;</span><br><span class="line">    //  是否使用mock</span><br><span class="line">    if (apiList[key].mock) &#123;</span><br><span class="line">      let url = apiList[key].url || apiList[key]</span><br><span class="line">      useMock(key,url)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">function valiateParams (api) &#123;</span><br><span class="line">  if (typeof api !== &apos;string&apos; &amp;&amp; typeof api !== &apos;object&apos; || api === null) &#123;</span><br><span class="line">    throw &apos;api错误格式， 必须的是url，或者包含url属性的对象&apos;</span><br><span class="line">  &#125;</span><br><span class="line">  if (typeof api === &apos;object&apos; &amp;&amp; typeof api.url !== &apos;string&apos;) &#123;</span><br><span class="line">    throw &apos;api错误格式， 必须的是url，或者包含url属性的对象&apos;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export default apiList</span><br></pre></td></tr></table></figure></p>
+<p>以上就是我自己封装的请求函数， 谢谢浏览。</p>
+
+      </div>
+        <div class="support-author">
+          <p>感谢您的阅读。 🙏
+          <a href="https://888.com/index.html" target="_blank">关于转载请看这里</a>
+            <!--<a class="btn-pay"  href="#pay-modal">¥ 打赏支持</a>-->
+          </p>
+        </div>
+        <!--
+            <div class="like ">
+              <div class="like-button">
+                <a id="like-note" href="">
+                  <i class="icon-heart"></i>喜欢
+                </a>
+              </div>
+              <span id="likes-count">256</span>
+            </div>
+        -->
+        <div class="otherLink">
+          <div class="previous">
+          </div>
+          <div class="next">
+          </div>
+        </div>
+        <div class="comments" id="comments">
+          
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+  const gitalk = new Gitalk({
+    clientID: '8888a8888',
+    clientSecret: '8888886666666',
+    repo: 'xxxx.github.io',
+    owner: 'admin',
+    admin: ['admin'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false
+  })
+
+  gitalk.render('comments');
+</script>
+
+
+        </div>
+      </div>
+    </div>
+   
+</main>
+<div class="footer">
+  <div class="info">
+    <p>
+    <a href="https://hexo.io"> Hexo </a> 强力驱动 |
+      <a href="https://github.com/Youthink/hexo-themes-yearn"> Yearn </a>
+      主题
+    </p>
+    <p>&copy;2013-2018 某某的博客 京ICP备xxxxxx号</p>
+  </div>
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script>//console
+  var consoleConfig = '\n欢迎访问 https://hufangyun.com ，围观小猿大圣的博客(づ｡◕‿‿◕｡)づ！\n,\n本博客使用 %cHexo%c 搭建，博客主题为小猿大圣开发的 %chexo-themes-yearn%c ~~~ 🎉🎉🎉 \n\n源码 https://github.com/Youthink/hexo-themes-yearn \n\n如果喜欢可以 star 支持一下 ❤️~\n,\n扫描下面的二维码，在手机上查看博客！\n,https://static.hufangyun.com/blog-url-qrcode-180-180.png,\n 想知道这个效果如何实现的？博客内搜索 console 彩蛋 🚀 ！\n'.split(',');
+  var canConsole = true;
+  var consoleInfo = (function(consoleConfig) {
+  if (!canConsole || !consoleConfig || consoleConfig.length < 1) {
+    return;
+  }
+  var consoleColor = '#6190e8';
+  var _console;
+  var backgroundTextStyle = 'padding: 1px 5px;color: #fff;background: ' + consoleColor + ';'
+  var textStyle = 'color: ' + consoleColor + ';';
+
+  consoleConfig.map(o => {
+    var num = (o.match(/%c/g) || []).length;
+    if(/^http(s)?:\/\//.test(o)) {
+      console.log('%c     ', 'background: url(' + o + ') no-repeat left center;font-size: 180px;');
+      return;
+    }
+    if (num > 0) {
+      var logArguments = [];
+      for (var i = 0; i < num; i++) {
+        if (i % 2 === 0) {
+          logArguments.push(backgroundTextStyle);
+        } else {
+          logArguments.push(textStyle);
+        }
+      }
+      (_console = console).log.apply(_console, ['%c' + o, textStyle].concat(logArguments));
+      return;
+    }
+    console.log('%c' + o, textStyle);
+  });
+}(consoleConfig));</script><script type="text/javascript" src="/lyc.github.io/./js/main.js"></script>
+
+  <script src="//at.alicdn.com/t/font_159214_mvtxvg9me9.js"></script>
+</body>
+</html>

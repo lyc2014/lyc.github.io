@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="keywords" content="hexo,个人博客,blog">
+  <meta name="description" content="某某的个人博客">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  <link rel="dns-prefetch" href="https://busuanzi.ibruce.info">
+  <link rel="dns-prefetch" href="https://at.alicdn.com">
+  
+  <link rel="dns-prefetch" href="https://widget.daovoice.io">
+  <link rel="dns-prefetch" href="https://widget-static-cdn.daovoice.io">
+  <link rel="dns-prefetch" href="https://im.daovoice.io">
+  
+  
+  <link rel="dns-prefetch" href="https://hm.baidu.com/">
+  
+  
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://api.github.com">
+  <link rel="dns-prefetch" href="https://avatars3.githubusercontent.com">
+  
+  <link rel="stylesheet" type="text/css" href="/lyc.github.io/./style/main.css">
+	<link rel="shortcut icon" href="/favicon.ico" title="Favicon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+	<title>一、从零搭建，开发vue组件并发布到npm(完成自定义dev环境脚手架)</title>
+  
+  <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?awwssw1snsnsnn1ndndnndnd99j";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();
+  </script>
+  
+  
+    <script>(function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/123456.js","daovoice");daovoice('init',{app_id: "123456"});daovoice('update');
+  </script>
+  
+</head>
+<body>
+  <canvas id="pattern-placeholder" height="230"></canvas>
+<div class="navbar-header">
+  <a class="blog-title" href="/lyc.github.io/">LYC BLOG</a>
+  <a class="face-img" href="/lyc.github.io/">
+    <img src="https://avatars0.githubusercontent.com/u/30564870?s=460&amp;u=b77ffd4cb96db528d15a517ba94ac5dab3271773&amp;v=4">
+  </a>
+</div>
+<main>
+  <div class="article-title">
+    
+  
+  <h1 class="title">
+    一、从零搭建，开发vue组件并发布到npm(完成自定义dev环境脚手架)
+  </h1>
+  
+
+
+    <ul class="article-info">
+      <li>
+        发布
+        <time datetime="2019-10-20T08:35:15.000Z" itemprop="datePublished">2019-10-20</time>
+      </li>
+      <li>
+        
+    更新 <time datetime="2020-10-29T18:21:20.260Z" itemprop="dateUpdated">2020-10-30</time>
+
+      </li>
+      <li id="busuanzi_container_page_pv">
+        阅读 <span id="busuanzi_value_page_pv"></span>
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <div class="article">
+      <div class="content">
+        
+        <h3 id="使用webpack打包工具，初始化项目。"><a href="#使用webpack打包工具，初始化项目。" class="headerlink" title="使用webpack打包工具，初始化项目。"></a>使用webpack打包工具，初始化项目。</h3><p>本博客从零开始搭建项目，使用的打包工具是webpack，webpack官方文档地址<a href="https://webpackjs.com" target="_blank" rel="noopener">https://webpackjs.com</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir vue-component-lyc</span><br><span class="line">cd ./vue-component-lyc</span><br><span class="line">npm init -y</span><br></pre></td></tr></table></figure>
+<p>初始化完成后，文件夹会生成一个pagejson文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;vue-component-lyc&quot;, // 项目名称</span><br><span class="line">  &quot;version&quot;: &quot;1.0.0&quot;, // 项目版本</span><br><span class="line">  &quot;description&quot;: &quot;&quot;,</span><br><span class="line">  &quot;main&quot;: &quot;index.js&quot;, // 默认入口文件</span><br><span class="line">  &quot;scripts&quot;: &#123;</span><br><span class="line">    &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;keywords&quot;: [],</span><br><span class="line">  &quot;author&quot;: &quot;&quot;,</span><br><span class="line">  &quot;license&quot;: &quot;ISC&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="确定目录结构，编辑webpack打包配置。"><a href="#确定目录结构，编辑webpack打包配置。" class="headerlink" title="确定目录结构，编辑webpack打包配置。"></a>确定目录结构，编辑webpack打包配置。</h3><p>首先，我们先创建一个build文件夹，用于放置webpack相关配置，build里分别创建webpack.base.js、webpack.dev.js和webpack.prod.js文件。</p>
+<p>然后创建一个src文件夹，src里面再创建一个App.vue文件和一个mian.js打包入口文件。到此文件目录架构如下</p>
+<img src="/lyc.github.io/2019/10/20/一、从零搭建，开发vue组件并发布到npm(完成自定义脚手架)/QQ20191020-0.png" title="This is an image">
+<p>然后，我们需要考虑需要引入哪些依赖、插件。使用webpack，肯定需要引入webpack、webpack-cli、webpack-dev-server。<br>loader方面，先引入几个常用的loader: url-loader、css-loader、style-loader、babel-loader。这个项目需要打包处理.vue文件，所以需要引入vue-loader和vue, css处理器我比较喜欢使用sass，所以我还要引入sass-loader、node-sass。<br>插件方面，引入常用的html-webpack-plugin、clean-webpack-plugin, 因为我们项目打算把webpack开发环境配置webpack.dev.js和生产环境配置webpack.prod.js中的公用配置部分提取出来, 所以需要引入webpack-merge, 再引入webpack-simple-progress-plugin查看打包进程。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">npm install webpack webpack-cli webpack-dev-server url-loader css-loader style-loader </span><br><span class="line">babel-loader vue-loader sass-loader node-sass html-webpack-plugin clean-webpack-plugin </span><br><span class="line">webpack-merge webpack-simple-progress-plugin --save-dev</span><br><span class="line">npm install vue --save</span><br></pre></td></tr></table></figure>
+<p>在根目录下创建一个public文件夹，用于放置一些静态文件，然后建立一个模版文件index.html, 配合插件html-webpack-plugin使用</p>
+<img src="/lyc.github.io/2019/10/20/一、从零搭建，开发vue组件并发布到npm(完成自定义脚手架)/photo1026-2.jpg" title="This is an image">
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">  &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span><br><span class="line">  &lt;meta http-equiv=&quot;X-UA-Compatible&quot; content=&quot;ie=edge&quot;&gt;</span><br><span class="line">  &lt;title&gt;Document&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">  &lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<p>接下来开始参考webpack官方文档撸配置了</p>
+<p>build/webpack.base.js中添加配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">const &#123; CleanWebpackPlugin &#125; = require(&apos;clean-webpack-plugin&apos;)</span><br><span class="line">const SimpleProgressPlugin = require(&apos;webpack-simple-progress-plugin&apos;)</span><br><span class="line">module.exports = &#123;</span><br><span class="line">  resolve: &#123;</span><br><span class="line">    extensions: [&apos;.js&apos;, &apos;.vue&apos;, &apos;.json&apos;],</span><br><span class="line">  &#125;,</span><br><span class="line">  module: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.vue$/,</span><br><span class="line">        loader: &apos;vue-loader&apos;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.js$/,</span><br><span class="line">        loader: &apos;babel-loader&apos;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.css$/,</span><br><span class="line">        loader: &quot;style-loader!css-loader&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.scss$/,</span><br><span class="line">        use: [</span><br><span class="line">          &quot;style-loader&quot;,</span><br><span class="line">          &quot;css-loader&quot;,</span><br><span class="line">          &quot;sass-loader&quot;</span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.(png|jpg|gif)$/i,</span><br><span class="line">        use: [</span><br><span class="line">          &#123;</span><br><span class="line">            loader: &apos;url-loader&apos;</span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  plugins: [</span><br><span class="line">    new CleanWebpackPlugin(),</span><br><span class="line">    new SimpleProgressPlugin()</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>开发环境配置 webpack.dev.js<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">const merge = require(&apos;webpack-merge&apos;)</span><br><span class="line">const common = require(&apos;./webpack.base.js&apos;)</span><br><span class="line">const path = require(&apos;path&apos;)</span><br><span class="line">const HtmlWebpackPlugin = require(&apos;html-webpack-plugin&apos;)</span><br><span class="line"></span><br><span class="line">module.exports = merge(common, &#123;</span><br><span class="line">  mode: &apos;development&apos;,</span><br><span class="line">  entry: path.resolve(__dirname, &apos;../src/main.js&apos;),</span><br><span class="line">  output: &#123;</span><br><span class="line">    filename: &quot;[name].[hash].main.[id].js&quot;,</span><br><span class="line">    path: path.resolve(__dirname, &apos;../dist/&apos;)</span><br><span class="line">  &#125;,</span><br><span class="line">  devServer: &#123;</span><br><span class="line">    hot: true,</span><br><span class="line">    port: 9001,</span><br><span class="line">    stats: &apos;minimal&apos;</span><br><span class="line">  &#125;,</span><br><span class="line">  plugins: [</span><br><span class="line">    new HtmlWebpackPlugin(&#123;</span><br><span class="line">      template: &apos;./public/index.html&apos;</span><br><span class="line">    &#125;)</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h3 id="添加测试App-vue，本地运行测试。"><a href="#添加测试App-vue，本地运行测试。" class="headerlink" title="添加测试App.vue，本地运行测试。"></a>添加测试App.vue，本地运行测试。</h3><p>将App.vue文件引入main.js中，对vue源码不了解的小伙伴，可以看这个文档<a href="https://ustbhuangyi.github.io/vue-analysis/" target="_blank" rel="noopener">https://ustbhuangyi.github.io/vue-analysis/</a></p>
+<p>测试页面App.vue<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div class=&quot;app&quot;&gt;</span><br><span class="line">    &lt;p&gt;测试页面&lt;/p&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">&lt;/template&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">export default &#123;</span><br><span class="line">  data () &#123;</span><br><span class="line">    return &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line">&lt;style lang=&quot;scss&quot; scoped&gt;</span><br><span class="line"></span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure></p>
+<p>开发环境入口文件 src/main.js<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import Vue from &apos;vue&apos;</span><br><span class="line">import App from &apos;./App.vue&apos;</span><br><span class="line"></span><br><span class="line">new Vue(&#123;</span><br><span class="line">  el: &apos;#app&apos;,</span><br><span class="line">  render: h =&gt; h(App)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>pageage.json添加运行命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;scripts&quot;: &#123;</span><br><span class="line">  &quot;serve&quot;: &quot;webpack-dev-server --config build/webpack.dev.js&quot;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>目前文件目录</p>
+<img src="/lyc.github.io/2019/10/20/一、从零搭建，开发vue组件并发布到npm(完成自定义脚手架)/QQ20191020-1.png" title="This is an image">
+<p>接下来, npm run serve跑一下， 出来的肯定是一堆报错，哈哈哈哈哈哈，我们一个个去解决它吧<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Error: Cannot find module &apos;@babel/core&apos;</span><br><span class="line"> babel-loader@8 requires Babel 7.x (the package &apos;@babel/core&apos;). </span><br><span class="line"> If you&apos;d like to use Babel 6.x (&apos;babel-core&apos;), </span><br><span class="line"> you should install &apos;babel-loader@7&apos;</span><br></pre></td></tr></table></figure></p>
+<p>根据报错提示，我们可以选择npm install @babel/core –save-dev, 继续跑，又报错了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RROR in ./src/App.vue</span><br><span class="line">Module Error (from ./node_modules/vue-loader/lib/index.js):</span><br><span class="line">[vue-loader] vue-template-compiler must be installed as a peer dependency, </span><br><span class="line">or a compatible compiler implementation must be passed via option</span><br><span class="line">s.</span><br></pre></td></tr></table></figure></p>
+<p>提示中表明，安装vue-loader的同时也要安装vue-template-compiler这个依赖，继续 npm install vue-template-compiler –save-dev， 继续跑，又报错了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ERROR in ./src/App.vue</span><br><span class="line">Module Error (from ./node_modules/vue-loader/lib/index.js):</span><br><span class="line">vue-loader was used without the corresponding plugin. Make sure to include </span><br><span class="line">VueLoaderPlugin in your webpack config.</span><br></pre></td></tr></table></figure></p>
+<p>vue-loader必须在相应插件VueLoaderPlugin下才能正常使用，需要在webpack配置中加上它, Vue-Loader使用文档中也有特别提到<a href="https://vue-loader.vuejs.org/zh/guide/#%E6%89%8B%E5%8A%A8%E8%AE%BE%E7%BD%AE" target="_blank" rel="noopener">https://vue-loader.vuejs.org/zh/guide/#%E6%89%8B%E5%8A%A8%E8%AE%BE%E7%BD%AE</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//  webpack.base.js中添加(不要直接粘贴代码，在对应为止添加即可)</span><br><span class="line">const VueLoaderPlugin = require(&apos;vue-loader/lib/plugin&apos;)</span><br><span class="line"></span><br><span class="line">plugins: [</span><br><span class="line">  new VueLoaderPlugin()</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<p>继续运行 成功了， 第一步完成。</p>
+<img src="/lyc.github.io/2019/10/20/一、从零搭建，开发vue组件并发布到npm(完成自定义脚手架)/QQ20191020-0.jpg" title="This is an image">
+
+      </div>
+        <div class="support-author">
+          <p>感谢您的阅读。 🙏
+          <a href="https://888.com/index.html" target="_blank">关于转载请看这里</a>
+            <!--<a class="btn-pay"  href="#pay-modal">¥ 打赏支持</a>-->
+          </p>
+        </div>
+        <!--
+            <div class="like ">
+              <div class="like-button">
+                <a id="like-note" href="">
+                  <i class="icon-heart"></i>喜欢
+                </a>
+              </div>
+              <span id="likes-count">256</span>
+            </div>
+        -->
+        <div class="otherLink">
+          <div class="previous">
+          </div>
+          <div class="next">
+          </div>
+        </div>
+        <div class="comments" id="comments">
+          
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+  const gitalk = new Gitalk({
+    clientID: '8888a8888',
+    clientSecret: '8888886666666',
+    repo: 'xxxx.github.io',
+    owner: 'admin',
+    admin: ['admin'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false
+  })
+
+  gitalk.render('comments');
+</script>
+
+
+        </div>
+      </div>
+    </div>
+   
+</main>
+<div class="footer">
+  <div class="info">
+    <p>
+    <a href="https://hexo.io"> Hexo </a> 强力驱动 |
+      <a href="https://github.com/Youthink/hexo-themes-yearn"> Yearn </a>
+      主题
+    </p>
+    <p>&copy;2013-2018 某某的博客 京ICP备xxxxxx号</p>
+  </div>
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script>//console
+  var consoleConfig = '\n欢迎访问 https://hufangyun.com ，围观小猿大圣的博客(づ｡◕‿‿◕｡)づ！\n,\n本博客使用 %cHexo%c 搭建，博客主题为小猿大圣开发的 %chexo-themes-yearn%c ~~~ 🎉🎉🎉 \n\n源码 https://github.com/Youthink/hexo-themes-yearn \n\n如果喜欢可以 star 支持一下 ❤️~\n,\n扫描下面的二维码，在手机上查看博客！\n,https://static.hufangyun.com/blog-url-qrcode-180-180.png,\n 想知道这个效果如何实现的？博客内搜索 console 彩蛋 🚀 ！\n'.split(',');
+  var canConsole = true;
+  var consoleInfo = (function(consoleConfig) {
+  if (!canConsole || !consoleConfig || consoleConfig.length < 1) {
+    return;
+  }
+  var consoleColor = '#6190e8';
+  var _console;
+  var backgroundTextStyle = 'padding: 1px 5px;color: #fff;background: ' + consoleColor + ';'
+  var textStyle = 'color: ' + consoleColor + ';';
+
+  consoleConfig.map(o => {
+    var num = (o.match(/%c/g) || []).length;
+    if(/^http(s)?:\/\//.test(o)) {
+      console.log('%c     ', 'background: url(' + o + ') no-repeat left center;font-size: 180px;');
+      return;
+    }
+    if (num > 0) {
+      var logArguments = [];
+      for (var i = 0; i < num; i++) {
+        if (i % 2 === 0) {
+          logArguments.push(backgroundTextStyle);
+        } else {
+          logArguments.push(textStyle);
+        }
+      }
+      (_console = console).log.apply(_console, ['%c' + o, textStyle].concat(logArguments));
+      return;
+    }
+    console.log('%c' + o, textStyle);
+  });
+}(consoleConfig));</script><script type="text/javascript" src="/lyc.github.io/./js/main.js"></script>
+
+  <script src="//at.alicdn.com/t/font_159214_mvtxvg9me9.js"></script>
+</body>
+</html>
