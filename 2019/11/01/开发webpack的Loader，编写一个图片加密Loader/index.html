@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="keywords" content="hexo,个人博客,blog">
+  <meta name="description" content="某某的个人博客">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  <link rel="dns-prefetch" href="https://busuanzi.ibruce.info">
+  <link rel="dns-prefetch" href="https://at.alicdn.com">
+  
+  <link rel="dns-prefetch" href="https://widget.daovoice.io">
+  <link rel="dns-prefetch" href="https://widget-static-cdn.daovoice.io">
+  <link rel="dns-prefetch" href="https://im.daovoice.io">
+  
+  
+  <link rel="dns-prefetch" href="https://hm.baidu.com/">
+  
+  
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://api.github.com">
+  <link rel="dns-prefetch" href="https://avatars3.githubusercontent.com">
+  
+  <link rel="stylesheet" type="text/css" href="/lyc.github.io/./style/main.css">
+	<link rel="shortcut icon" href="/favicon.ico" title="Favicon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+	<title>开发webpack的Loader，编写一个图片加密Loader</title>
+  
+  <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?awwssw1snsnsnn1ndndnndnd99j";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();
+  </script>
+  
+  
+    <script>(function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/123456.js","daovoice");daovoice('init',{app_id: "123456"});daovoice('update');
+  </script>
+  
+</head>
+<body>
+  <canvas id="pattern-placeholder" height="230"></canvas>
+<div class="navbar-header">
+  <a class="blog-title" href="/lyc.github.io/">LYC BLOG</a>
+  <a class="face-img" href="/lyc.github.io/">
+    <img src="https://avatars0.githubusercontent.com/u/30564870?s=460&amp;u=b77ffd4cb96db528d15a517ba94ac5dab3271773&amp;v=4">
+  </a>
+</div>
+<main>
+  <div class="article-title">
+    
+  
+  <h1 class="title">
+    开发webpack的Loader，编写一个图片加密Loader
+  </h1>
+  
+
+
+    <ul class="article-info">
+      <li>
+        发布
+        <time datetime="2019-11-01T08:24:15.000Z" itemprop="datePublished">2019-11-01</time>
+      </li>
+      <li>
+        
+    更新 <time datetime="2020-11-01T09:10:56.250Z" itemprop="dateUpdated">2020-11-01</time>
+
+      </li>
+      <li id="busuanzi_container_page_pv">
+        阅读 <span id="busuanzi_value_page_pv"></span>
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <div class="article">
+      <div class="content">
+        
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>为了更了解webpack的打包过程，我决定写一个小demo，写一个加密图片的打包Loader，实现的功能是打包的时候加密图片资源，网页上加载完图片资源后再进行解密，可以有效<strong>防止网页上的图片被直接下载窃取</strong>, <a href="https://www.npmjs.com/package/img-hide" target="_blank" rel="noopener">npm地址</a></p>
+<img src="/lyc.github.io/2019/11/01/开发webpack的Loader，编写一个图片加密Loader/gif1.gif" title="This is an image">
+<h3 id="Loader开发思路"><a href="#Loader开发思路" class="headerlink" title="Loader开发思路"></a>Loader开发思路</h3><p>官方文档中有开发loader的<a href="https://webpack.js.org/contribute/writing-a-loader/" target="_blank" rel="noopener">教程</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A loader is a node module that exports a function.</span><br><span class="line">This function is called when a resource should be transformed by this loader.</span><br><span class="line">The given function will have access to the Loader API using the this context provided to it.</span><br></pre></td></tr></table></figure>
+<p>这里提到了webpack的loader是一个导出为函数的node模块, 函数的入参便是源资源内容，函数中可以对这些内容进行处理。所以一个最简单的loader可以这样写:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">module.exports = function(source) &#123;</span><br><span class="line">  return source;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Loader的具体开发规范可以直接看<a href="https://webpack.js.org/contribute/writing-a-loader/" target="_blank" rel="noopener">官网</a>, 本文章主要讲一下Loader的实现过程。</p>
+<img src="/lyc.github.io/2019/11/01/开发webpack的Loader，编写一个图片加密Loader/gif2.gif" title="This is an image">
+<p>思路: 利用loader的链式调用规则，在url-loader处理图片资源前，先用加密Loader对图片进行处理，所以loader的入参是图片资源（二进制数据资源），返回的资源能够让url-loader进行处理，所以返回的也是一个图片资源（二进制资源），整个过程处理和传递的都是二进制数据。为了方便使用，配置项里保留两个可选项，需要加密的路径(path)和不需要加密的图片白名单(whiteList)。</p>
+<h3 id="实现过程"><a href="#实现过程" class="headerlink" title="实现过程"></a>实现过程</h3><p>创建项目<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm init img-hide -y</span><br></pre></td></tr></table></figure></p>
+<p>安装需要用到的Loader和插件: webpack webpack-cli url-loader file-loader和loader-utils, 其中url-loader依赖于file-loader。 loader-utils是开发loader中非常好用的插件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save-dev webpack webpack-cli url-loader file-loader loader-utils</span><br></pre></td></tr></table></figure></p>
+<p>创建loader.js文件，引入一张正常图片logo.png, 创建一个入口文件mian.js, 创建webpack.config.js打包配置文件。入口文件main.js引入图片。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import img from &apos;./logo.png&apos;</span><br></pre></td></tr></table></figure>
+<p>编写webpack打包配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">const path = require(&apos;path&apos;)</span><br><span class="line">module.exports = &#123;</span><br><span class="line">  mode: &apos;development&apos;,</span><br><span class="line">  entry: &apos;./main.js&apos;,</span><br><span class="line">  output: &#123;</span><br><span class="line">    filename: &apos;out.js&apos;,</span><br><span class="line">    path: path.resolve(__dirname, &apos;dist&apos;)</span><br><span class="line">  &#125;,</span><br><span class="line">  module: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: /\.(png|jpg|gif)$/i,</span><br><span class="line">        use: [</span><br><span class="line">          &#123;</span><br><span class="line">            loader: &apos;url-loader&apos;,</span><br><span class="line">            options: &#123;</span><br><span class="line">              limit: 10</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            loader: path.resolve(__dirname, &apos;./loader.js&apos;),</span><br><span class="line">          &#125;</span><br><span class="line">        ],</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>写一个最简单的Loader不加任何处理<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">module.exports = function(source) &#123;</span><br><span class="line">  console.log(&apos;source&apos;, source)</span><br><span class="line">  return source;</span><br><span class="line">&#125;;</span><br><span class="line">module.exports.raw = true</span><br></pre></td></tr></table></figure></p>
+<p>将module.exports.raw = true，source会以 raw Buffer 的形式传入到 loader 中了，将这个设置好。</p>
+<p>package.json添加build命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;scripts&quot;: &#123;</span><br><span class="line">  &quot;build&quot;: &quot;webpack&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>npm run build 进行打包测试loader, 可以看到source被打印出来了</p>
+<img src="/lyc.github.io/2019/11/01/开发webpack的Loader，编写一个图片加密Loader/jpg2.jpeg" title="This is an image">
+<p>根据前面的需求，下面对loader的资源进行加密处理， loader.js进一步完善。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">const &#123; getOptions &#125; = require(&apos;loader-utils&apos;)</span><br><span class="line">const path = require(&apos;path&apos;)</span><br><span class="line">module.exports = function (souce) &#123;</span><br><span class="line">  //  获取 loader 的配置参数 options</span><br><span class="line">  const options = getOptions(this)</span><br><span class="line">  //  不属于 options.path 目录下的图片不进行加密处理</span><br><span class="line">  if (options.path &amp;&amp; this.resourcePath.indexOf(options.path) === -1) &#123;</span><br><span class="line">    return souce</span><br><span class="line">  &#125;</span><br><span class="line">  /**</span><br><span class="line">   * 路径匹配，但是不在options.whiteList白名单里面的不进行加密处理</span><br><span class="line">   * 不配置options.whiteList白名单项，则匹配路径下的图片全部进行加密处理</span><br><span class="line">   */</span><br><span class="line">  if (options.path &amp;&amp; this.resourcePath.indexOf(options.path) === 0) &#123;</span><br><span class="line">    if (options.whiteList &amp;&amp; Array.isArray(options.whiteList)) &#123;</span><br><span class="line">      var name = &apos;&apos;</span><br><span class="line">      try &#123;</span><br><span class="line">        name = path.basename(this.resourcePath)</span><br><span class="line">      &#125; catch &#123;</span><br><span class="line">        console.log(this.resourcePath + &apos;的格式不正确&apos;)</span><br><span class="line">      &#125;</span><br><span class="line">      if (options.whiteList.indexOf(name) === -1) &#123;</span><br><span class="line">        return souce</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  var src = []</span><br><span class="line">  for (let i = souce.length; i &gt; 0; i--) &#123;</span><br><span class="line">    src.push(souce[i - 1])</span><br><span class="line">  &#125;</span><br><span class="line">  var buf = Buffer.from(src)</span><br><span class="line">  return buf</span><br><span class="line">&#125;</span><br><span class="line">module.exports.raw = true</span><br></pre></td></tr></table></figure>
+<p>webpack可以进一步进行配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">use: [</span><br><span class="line">  &#123;</span><br><span class="line">    loader: &apos;url-loader&apos;,</span><br><span class="line">    options: &#123;</span><br><span class="line">      limit: 10</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    loader: path.resolve(__dirname, &apos;./loader.js&apos;),</span><br><span class="line">    options: &#123;</span><br><span class="line">      path: path.resolve(__dirname, &apos;./&apos;),</span><br><span class="line">      whiteList: [&apos;logo.png&apos;]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<p>再npm run build 打包一遍， 生成的图片已经是被加密过裂开的图片了。</p>
+<img src="/lyc.github.io/2019/11/01/开发webpack的Loader，编写一个图片加密Loader/jpg3.jpeg" title="This is an image">
+<img src="/lyc.github.io/2019/11/01/开发webpack的Loader，编写一个图片加密Loader/gif3.gif" title="This is an image">
+      </div>
+        <div class="support-author">
+          <p>感谢您的阅读。 🙏
+          <a href="https://888.com/index.html" target="_blank">关于转载请看这里</a>
+            <!--<a class="btn-pay"  href="#pay-modal">¥ 打赏支持</a>-->
+          </p>
+        </div>
+        <!--
+            <div class="like ">
+              <div class="like-button">
+                <a id="like-note" href="">
+                  <i class="icon-heart"></i>喜欢
+                </a>
+              </div>
+              <span id="likes-count">256</span>
+            </div>
+        -->
+        <div class="otherLink">
+          <div class="previous">
+          </div>
+          <div class="next">
+          </div>
+        </div>
+        <div class="comments" id="comments">
+          
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+  const gitalk = new Gitalk({
+    clientID: '8888a8888',
+    clientSecret: '8888886666666',
+    repo: 'xxxx.github.io',
+    owner: 'admin',
+    admin: ['admin'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false
+  })
+
+  gitalk.render('comments');
+</script>
+
+
+        </div>
+      </div>
+    </div>
+   
+</main>
+<div class="footer">
+  <div class="info">
+    <p>
+    <a href="https://hexo.io"> Hexo </a> 强力驱动 |
+      <a href="https://github.com/Youthink/hexo-themes-yearn"> Yearn </a>
+      主题
+    </p>
+    <p>&copy;2013-2018 某某的博客 京ICP备xxxxxx号</p>
+  </div>
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script>//console
+  var consoleConfig = '\n欢迎访问 https://hufangyun.com ，围观小猿大圣的博客(づ｡◕‿‿◕｡)づ！\n,\n本博客使用 %cHexo%c 搭建，博客主题为小猿大圣开发的 %chexo-themes-yearn%c ~~~ 🎉🎉🎉 \n\n源码 https://github.com/Youthink/hexo-themes-yearn \n\n如果喜欢可以 star 支持一下 ❤️~\n,\n扫描下面的二维码，在手机上查看博客！\n,https://static.hufangyun.com/blog-url-qrcode-180-180.png,\n 想知道这个效果如何实现的？博客内搜索 console 彩蛋 🚀 ！\n'.split(',');
+  var canConsole = true;
+  var consoleInfo = (function(consoleConfig) {
+  if (!canConsole || !consoleConfig || consoleConfig.length < 1) {
+    return;
+  }
+  var consoleColor = '#6190e8';
+  var _console;
+  var backgroundTextStyle = 'padding: 1px 5px;color: #fff;background: ' + consoleColor + ';'
+  var textStyle = 'color: ' + consoleColor + ';';
+
+  consoleConfig.map(o => {
+    var num = (o.match(/%c/g) || []).length;
+    if(/^http(s)?:\/\//.test(o)) {
+      console.log('%c     ', 'background: url(' + o + ') no-repeat left center;font-size: 180px;');
+      return;
+    }
+    if (num > 0) {
+      var logArguments = [];
+      for (var i = 0; i < num; i++) {
+        if (i % 2 === 0) {
+          logArguments.push(backgroundTextStyle);
+        } else {
+          logArguments.push(textStyle);
+        }
+      }
+      (_console = console).log.apply(_console, ['%c' + o, textStyle].concat(logArguments));
+      return;
+    }
+    console.log('%c' + o, textStyle);
+  });
+}(consoleConfig));</script><script type="text/javascript" src="/lyc.github.io/./js/main.js"></script>
+
+  <script src="//at.alicdn.com/t/font_159214_mvtxvg9me9.js"></script>
+</body>
+</html>
